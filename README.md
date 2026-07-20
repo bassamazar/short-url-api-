@@ -30,5 +30,5 @@ GET /api/urls/my-links - List your links with pagination & search.
 Query: ?page=1&limit=10&q=searchterm
 
 GET /:shortCode - Redirect to original URL
-
-
+sawgger page:
+http://localhost:3000/api-docs

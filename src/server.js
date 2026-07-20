@@ -3,10 +3,15 @@ import express from 'express';
 import urlRoutes from './routes/url.route.js';
 import authRoutes from './routes/auth.route.js'; // Adjust path if needed
 import { redirectToOriginal } from './controllers/url.controller.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './sawgger.js';
 
 const app = express();
-app.use(express.json()); // Essential for parsing req.body
 
+
+
+app.use(express.json()); // Essential for parsing req.body
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Register your auth routes
 app.use('/api/auth', authRoutes);

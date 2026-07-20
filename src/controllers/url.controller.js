@@ -1,30 +1,37 @@
+import { shortenUrlSchema } from '../validation/urlvalidator.js'
 import prisma from '../db/prisma.js';
 import { nanoid } from 'nanoid'; // You'll need to run: npm install nanoid
 
 export const shortenUrl = async (req, res) => {
+    // 1. استخدام Joi للتحقق من البيانات قبل أي شيء
+    const { error, value } = shortenUrlSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
+
     try {
-        const { originalUrl, customCode } = req.body;
+        const { originalUrl, customCode } = value; // نستخدم value المعالج من Joi
         const userId = req.user.userId;
 
-        // 1. Determine the short code
+        // 2. تحديد الـ shortCode
         let shortCode = customCode;
 
         if (shortCode) {
-            // Check if the custom code is already in use
+            // التحقق إذا كان الكود مستخدم مسبقاً
             const existing = await prisma.url.findUnique({ where: { shortCode } });
             if (existing) {
                 return res.status(400).json({ error: "Short code is already taken" });
             }
         } else {
-            // Generate a random one if no custom code provided
+            // توليد كود عشوائي في حال لم يتم توفير كود مخصص
             shortCode = nanoid(6);
         }
 
-        // 2. Set expiration (10 hours)
+        // 3. تحديد تاريخ الانتهاء (10 ساعات)
         const expirationDate = new Date();
         expirationDate.setHours(expirationDate.getHours() + 10);
 
-        // 3. Create the entry
+        // 4. إنشاء الرابط
         const newUrl = await prisma.url.create({
             data: {
                 originalUrl,
@@ -155,3 +162,5 @@ export const redirectToOriginal = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
+
+
